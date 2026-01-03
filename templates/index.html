@@ -10,16 +10,7 @@
 
 <button onclick="startExam()">Start Exam</button>
 
-<script>
-function speak(text) {
-    const msg = new SpeechSynthesisUtterance(text);
-    window.speechSynthesis.speak(msg);
-}
-
-function startExam() {
-    speak("The exam has started. Please listen carefully.");
-}
-</script>
+<script src="{{ url_for('static', filename='voice.js') }}"></script>
 
 </body>
 </html>
