@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Voice Exam System</title>
+</head>
+<body>
+
+<h1>Voice-Based Examination System</h1>
+
+<button onclick="startExam()">Start Exam</button>
+
+<script>
+function speak(text) {
+    const msg = new SpeechSynthesisUtterance(text);
+    window.speechSynthesis.speak(msg);
+}
+
+function startExam() {
+    speak("The exam has started. Please listen carefully.");
+}
+</script>
+
+</body>
+</html>
