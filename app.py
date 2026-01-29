@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, session
-from models import db
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+from models import db, Registration
+from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
 app.secret_key = "secretkey123"
@@ -20,30 +21,45 @@ USERS = {
 def index():
     return render_template('index.html')
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['POST'])
 def login():
-    error = None
+    username = request.form['username']
+    password = request.form['password']
 
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+    user = Registration.query.filter_by(username=username).first()
 
-        user = USERS.get(username)
+    # User does not exist
+    if not user:
+        flash("Invalid username or password")
+        return redirect(url_for('home'))
 
-        if user and user["password"] == password:
-            session['username'] = username
-            session['role'] = user["role"]
+    # Password does not match
+    if not check_password_hash(user.password_hash, password):
+        flash("Invalid username or password")
+        return redirect(url_for('home'))
 
-            if user["role"] == "student":
-                return redirect(url_for('student_dashboard'))
-            elif user["role"] == "invigilator":
-                return redirect(url_for('invigilator_dashboard'))
-            elif user["role"] == "admin":
-                return redirect(url_for('admin_dashboard'))
-        else:
-            error = "Invalid credentials"
+    # Login success
+    session['user_id'] = user.reg_id
+    session['role'] = user.role
 
-    return render_template('login.html', error=error)
+    if user.role == 'INVIGILATOR':
+        return redirect('/invigilator/dashboard')
+    else:
+        return redirect('/candidate/dashboard')
+
+@app.route('/candidate/dashboard')
+def candidate_dashboard():
+    if 'user_id' not in session or session.get('role') != 'CANDIDATE':
+        return redirect(url_for('home'))
+
+    return "Candidate Dashboard"
+
+@app.route('/invigilator/dashboard')
+def invigilator_dashboard():
+    if 'user_id' not in session or session.get('role') != 'INVIGILATOR':
+        return redirect(url_for('home'))
+
+    return "Invigilator Dashboard" 
 
 @app.route('/student')
 def student_dashboard():
