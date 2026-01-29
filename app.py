@@ -1,7 +1,13 @@
 from flask import Flask, render_template, request, redirect, url_for, session
+from models import db
 
 app = Flask(__name__)
 app.secret_key = "secretkey123"
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///exam.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.init_app(app)
 
 # Dummy users (for prototype)
 USERS = {
@@ -56,5 +62,11 @@ def logout():
     session.clear()
     return redirect(url_for('index'))
 
+@app.route('/')
+def home():
+    return render_template('index.html')
+
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
